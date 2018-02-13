@@ -9,6 +9,9 @@
 import UIKit
 import Firebase
 
+//user for session
+let user = User(schoolID: "123456", name: "Daniel", books: [])
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 

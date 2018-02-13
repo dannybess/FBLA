@@ -37,4 +37,16 @@ class Book {
         self.bookID = bookID
         self.count = count
     }
+    
+    // second init for storing only bookid
+    init(bookID: String) {
+        self.bookID = bookID
+        self.name = ""
+        self.author = ""
+        self.checkedout = 0
+        self.reserved = 0
+        self.count = 0
+    }
 }
+
+

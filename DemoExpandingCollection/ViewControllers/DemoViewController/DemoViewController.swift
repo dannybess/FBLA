@@ -10,13 +10,33 @@ import UIKit
 import AABlurAlertController
 import Firebase
 
+// to convert string to bool
+// to deal with type shifting
+// from firebase to client
+extension String {
+    func toBool() -> Bool? {
+        switch self {
+        case "True", "true", "yes", "1":
+            return true
+        case "False", "false", "no", "0":
+            return false
+        default:
+            return nil
+        }
+    }
+}
+
 class DemoViewController: ExpandingViewController {
     
-    typealias ItemInfo = (imageName: String, title: String, author: String, isInInventory: Bool)
     fileprivate var cellsIsOpen = [Bool]()
     fileprivate var items : [Book] = []
-
+    
+    @IBOutlet weak var searchButton: UIBarButtonItem!
     @IBOutlet var pageLabel: UILabel!
+    
+    @IBAction func searchClicked(_ sender: Any) {
+        
+    }
 }
 
 // MARK: - Lifecycle 🌎
@@ -31,6 +51,7 @@ extension DemoViewController {
         addGesture(to: collectionView!)
         configureNavBar()
         loadBooks()
+        loadUserInventory()
         fillCellIsOpenArray()
     }
 }
@@ -64,7 +85,6 @@ extension DemoViewController {
         ref.child("library").observeSingleEvent(of: .value, with: { (snapshot) in
             // Get user value
             let values = snapshot.value as? NSDictionary
-            var i = 0
             for (key, val) in values! {
                 let dict = val as! NSDictionary
                 let name = dict["name"] as! String
@@ -73,7 +93,7 @@ extension DemoViewController {
                 let count = dict["count"] as! Int
                 let reserved = dict["reserved"] as! Int
                 
-                var book = Book(name: name, author: author, checkedout: checkedout, reserved: reserved, bookID: key as! String, count: count)
+                var book = Book(name: name, author: author, checkedout: Int(checkedout), reserved: Int(reserved), bookID: key as! String, count: Int(count))
                 self.items.append(book)
                 self.fillCellIsOpenArray()
                 self.collectionView?.reloadData()
@@ -83,6 +103,36 @@ extension DemoViewController {
             print(error.localizedDescription)
         }
     }
+    
+    fileprivate func loadUserInventory() {
+        var ref = Database.database().reference()
+        ref.child("users").child(user.schoolID).child("books").observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let values = snapshot.value as? NSDictionary
+            //print(values)
+            for (key, val) in values! {
+                let dict = val as! NSDictionary
+                let bookid = key as! String
+                let checkedout = dict["checkedout"] as! Bool
+                user.books.append(Book(bookID: bookid))
+                self.collectionView?.reloadData()
+            }
+            
+        }) { (error) in
+            print(error.localizedDescription)
+        }
+    }
+
+    func checkIfInInventory(bookId : String) -> Bool {
+        for book in user.books {
+            if(book.bookID == bookId) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    
 }
 
 /// MARK: Gesture
@@ -108,7 +158,6 @@ extension DemoViewController {
         let open = sender.direction == .up ? true : false
         cell.cellIsOpen(open)
         cellsIsOpen[indexPath.row] = cell.isOpened
-    
     }
 }
 
@@ -131,9 +180,17 @@ extension DemoViewController {
 
         let index = indexPath.row % items.count
         let info = items[index]
-        cell.backgroundImageView?.image = UIImage(named: info.bookID)
+        cell.bookInfo = info
+        cell.backgroundImageView?.image = UIImage(named: "gatsby")
         cell.customTitle.text = info.name
         cell.authorLabel.text = "by " + info.author
+        if(checkIfInInventory(bookId: info.bookID)) {
+            cell.checkedOutLabel.text = "Checked Out"
+            cell.checkOutButton.setTitle("Return", for: UIControlState.normal)
+        }
+        else {
+            cell.checkedOutLabel.text = "Not Checked Out"
+        }
         cell.cellIsOpen(cellsIsOpen[index], animated: false)
     }
 
