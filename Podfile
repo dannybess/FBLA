@@ -7,6 +7,7 @@ target 'DemoExpandingCollection' do
 pod 'AABlurAlertController'
 pod 'Firebase/Core'
 pod 'Firebase/Database'
+pod 'DatePickerDialog'
   # Pods for DemoExpandingCollection
 
 end

@@ -9,6 +9,7 @@
 import UIKit
 import AABlurAlertController
 import Firebase
+import DatePickerDialog
 
 class DemoCollectionViewCell: BasePageCollectionCell {
 
@@ -19,6 +20,7 @@ class DemoCollectionViewCell: BasePageCollectionCell {
     @IBOutlet weak var checkOutButton: UIButton!
     @IBOutlet weak var reserveButton: UIButton!
     @IBOutlet weak var authorLabel: UILabel!
+    // create book object that can be passed through VC
     var bookInfo : Book = Book(name: "", author: "", checkedout: 0, reserved: 0, bookID: "", count: 0)
     
     override func awakeFromNib() {
@@ -44,68 +46,94 @@ class DemoCollectionViewCell: BasePageCollectionCell {
         return false
     }
     
+    // return date for checkout
+    // by default, is 31 days after current date
+    func dateFormatterCheckOut() -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = DateFormatter.Style.short
+        let currDate = Date()
+        let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currDate)
+        return formatter.string(from: newDate!)
+    }
+    
+    // left button clicked
+    // take according action (check out, return, reserve, pickup)
     @IBAction func checkOut(_ sender: Any) {
-        // get access to root VC
-        let root = UIApplication.shared.keyWindow?.rootViewController
-        
-        // check if user already has checked out book
-        if(checkIfInInventory(bookId: bookInfo.bookID) || self.checkOutButton.titleLabel?.text == "Return") {
-            returnCheckedout(user: user, returnBookID: bookInfo.bookID)
-        }
-        // check if there are sufficient copies of the book left
-        else if(bookInfo.count < 1) {
-            let alertController = UIAlertController(title: "Error", message:
-                "Sorry! There are no copies of this book left!", preferredStyle: UIAlertControllerStyle.alert)
-            alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
-            
-            root!.present(alertController, animated: true, completion: nil)
-        }
-        else {
-            user.books.append(bookInfo)
-            self.checkedOutLabel.text = "Checked Out"
-            var ref = Database.database().reference()
-            let schoolID = user.schoolID
-            
-            //adding book to user book list
-            ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("name").setValue(bookInfo.name)//setValue(["name":bookInfo.name])
-            ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("author").setValue(bookInfo.author)//setValue(["author":bookInfo.author])
-            ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("checkedout").setValue(true)//setValue(["checkedout":"true"])
-            ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("reserved").setValue(false)//setValue(["reserved":"false"])
-            
-            //retreving library info
-            ref.child("library").child(String(bookInfo.bookID)).observeSingleEvent(of: .value, with: { (snapshot) in
-                // Get user value
-                let value = snapshot.value as? NSDictionary
-                
-                var checkedout = 0
-                if let val = value?["checkedout"] as? Int {
-                    checkedout = (val + 1)
-                }
-                else{
-                    print("error not integer")
-                }
-                
-                var count = 0
-                if let val = value?["count"] as? Int {
-                    count = (val - 1)
-                }
-                else{
-                    print("error not integer")
-                }
-                
-                //updating the library book count
-                ref.child("library").child(String(self.bookInfo.bookID)).child("checkedout").setValue(checkedout) //setValue(["checkedout": checkedout])
-                ref.child("library").child(String(self.bookInfo.bookID)).child("count").setValue(count) //setValue(["count": count])
-                self.checkOutButton.setTitle("Return", for: UIControlState.normal)
-                let alertController = UIAlertController(title: "Success!", message:
-                    "You have now checked out this book!", preferredStyle: UIAlertControllerStyle.alert)
+        // check current state of button
+        switch self.checkOutButton.titleLabel?.text! {
+        // normal state, check-out book
+        case "Check Out"?:
+            // check if copies of book left
+            if(bookInfo.count < 1) {
+                let root = UIApplication.shared.keyWindow?.rootViewController
+                let alertController = UIAlertController(title: "Error", message:
+                    "Sorry! There are no copies of this book left!", preferredStyle: UIAlertControllerStyle.alert)
                 alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
                 
                 root!.present(alertController, animated: true, completion: nil)
-            }) { (error) in
-                print(error.localizedDescription)
             }
+            else {
+                checkOutHelper()
+            }
+        // book needs to be returned
+        case "Return"?:
+            returnCheckedout(user: user, returnBookID: bookInfo.bookID)
+        case "Pick-Up"?:
+            pickUp(user: user, bookId: bookInfo.bookID)
+        default:
+            return
         }
+    }
+    
+    func checkOutHelper() {
+        // get access to root VC
+        let root = UIApplication.shared.keyWindow?.rootViewController
+        user.books.append(bookInfo)
+        self.checkedOutLabel.text = "Checked Out"
+        var ref = Database.database().reference()
+        let schoolID = user.schoolID
+        
+        //adding book to user book list
+        ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("name").setValue(bookInfo.name)//setValue(["name":bookInfo.name])
+        ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("author").setValue(bookInfo.author)//setValue(["author":bookInfo.author])
+        ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("checkedout").setValue(true)//setValue(["checkedout":"true"])
+        ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("reserved").setValue(false)//setValue(["reserved":"false"])
+        ref.child("users").child(schoolID).child("books").child(bookInfo.bookID).child("date").setValue(dateFormatterCheckOut())//setValue(["reserved":"false"])
+
+        //retreving library info
+        ref.child("library").child(String(bookInfo.bookID)).observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let value = snapshot.value as? NSDictionary
+            
+            var checkedout = 0
+            if let val = value?["checkedout"] as? Int {
+                checkedout = (val + 1)
+            }
+            else{
+                print("error not integer")
+            }
+            
+            var count = 0
+            if let val = value?["count"] as? Int {
+                count = (val - 1)
+            }
+            else{
+                print("error not integer")
+            }
+            
+            //updating the library book count
+            ref.child("library").child(String(self.bookInfo.bookID)).child("checkedout").setValue(checkedout) //setValue(["checkedout": checkedout])
+            ref.child("library").child(String(self.bookInfo.bookID)).child("count").setValue(count) //setValue(["count": count])
+            let alertController = UIAlertController(title: "Success!", message:
+                "You have now checked out this book!", preferredStyle: UIAlertControllerStyle.alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
+            self.checkOutButton.setTitle("Return", for: UIControlState.normal)
+            self.reserveButton.isHidden = true
+            root!.present(alertController, animated: true, completion: nil)
+        }) { (error) in
+            print(error.localizedDescription)
+        }
+        
     }
     
     //returns the book to the library, and removes the book from user's list of checkouted books
@@ -119,13 +147,11 @@ class DemoCollectionViewCell: BasePageCollectionCell {
                 user.books.remove(at: index)
                 }
             }
-        
             ref.child("users").child(user.schoolID).child("books").child(returnBookID).removeValue()
             ref.child("library").child(returnBookID).observeSingleEvent(of: .value, with: { (snapshot) in
             // Get user value
             let value = snapshot.value as? NSDictionary
-            
-            
+   
             var checkedout = 0
             if let val = value?["checkedout"] as? Int {
                 print(val)
@@ -149,6 +175,7 @@ class DemoCollectionViewCell: BasePageCollectionCell {
             ref.child("library").child(returnBookID).child("count").setValue(count)
             self.checkedOutLabel.text = "Not Checked Out"
             self.checkOutButton.setTitle("Check Out", for: UIControlState.normal)
+            self.reserveButton.isHidden = false
             let alertController = UIAlertController(title: "Success!", message:
                     "You have now returned this book!", preferredStyle: UIAlertControllerStyle.alert)
             alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
@@ -161,8 +188,110 @@ class DemoCollectionViewCell: BasePageCollectionCell {
     }
     
     @IBAction func reserveClicked(_ sender: Any) {
-        print("RESERVE")
-        print(self.customTitle.text!)
+        // get date from user
+        DatePickerDialog().show("DatePicker", doneButtonTitle: "Done", cancelButtonTitle: "Cancel", datePickerMode: .date) {
+            (date) -> Void in
+            // user selected date
+            if let dt = date {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MM/dd/yyyy"
+                let date = (formatter.string(from: dt))
+                self.reserve(user: user, reservedBook: self.bookInfo, date: date)
+            }
+        }
+    }
+    
+    // helper function for reserveClicked() to avoid
+    // too much nested code
+    func reserve(user: User, reservedBook: Book, date : String) {
+        var ref = Database.database().reference()
+        user.books.append(reservedBook)
+        
+        let schoolID = user.schoolID
+
+        //adding book to user book list
+        ref.child("users").child(schoolID).child("books").child(reservedBook.bookID).child("name").setValue(reservedBook.name)//setValue(["name":checkedoutBook.name])
+        ref.child("users").child(schoolID).child("books").child(reservedBook.bookID).child("author").setValue(reservedBook.author)//setValue(["author":checkedoutBook.author])
+        ref.child("users").child(schoolID).child("books").child(reservedBook.bookID).child("checkedout").setValue(false)//setValue(["checkedout":"true"])
+        ref.child("users").child(schoolID).child("books").child(reservedBook.bookID).child("reserved").setValue(true)//setValue(["reserved":"false"])
+        ref.child("users").child(schoolID).child("books").child(reservedBook.bookID).child("date").setValue(date)//setValue(["reserved":"false"])
+
+        
+        //retreving library info
+        ref.child("library").child(String(reservedBook.bookID)).observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let value = snapshot.value as? NSDictionary
+            
+            var reserved = 0
+            if let val = value?["reserved"] as? Int {
+                reserved = val + 1
+            }
+            else{
+                print("error not integer")
+            }
+            
+            var count = 0
+            if let val = value?["count"] as? Int {
+                count = val - 1
+            }
+            else{
+                print("error not integer")
+            }
+            
+            //updating the library book count
+            ref.child("library").child(String(reservedBook.bookID)).child("reserved").setValue(reserved)
+            ref.child("library").child(String(reservedBook.bookID)).child("count").setValue(count)
+            self.reserveButton.isHidden = true
+            self.checkOutButton.setTitle("Pick-Up", for: UIControlState.normal)
+            self.checkedOutLabel.text = "Reserved, pick up on \(date)"
+            
+        }) { (error) in
+            print(error.localizedDescription)
+        }
+    }
+
+    func pickUp(user: User, bookId: String) {
+        var ref = Database.database().reference()
+        let root = UIApplication.shared.keyWindow?.rootViewController
+       // update values
+        ref.child("users").child(user.schoolID).child("books").child(bookId).child("reserved").setValue(false)
+        ref.child("users").child(user.schoolID).child("books").child(bookId).child("checkedout").setValue(true)
+        ref.child("users").child(user.schoolID).child("books").child(bookId).child("date").setValue(dateFormatterCheckOut())
+        ref.child("library").child(bookId).observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let value = snapshot.value as? NSDictionary
+            
+            var checkedout = 0
+            if let val = value?["checkedout"] as? Int {
+                checkedout = (val + 1)
+            }
+            else{
+                print("error not integer")
+            }
+            
+            var reserved = 0
+            if let val = value?["reserved"] as? Int {
+                reserved = (val - 1)
+            }
+            else{
+                print("error not integer")
+            }
+            
+            //updating the library book count
+            ref.child("library").child(String(self.bookInfo.bookID)).child("checkedout").setValue(checkedout) //setValue(["checkedout": checkedout])
+            ref.child("library").child(String(self.bookInfo.bookID)).child("reserved").setValue(reserved) //setValue(["count": count])
+            let alertController = UIAlertController(title: "Success!", message:
+                "You have now picked-up this book!", preferredStyle: UIAlertControllerStyle.alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
+            self.checkOutButton.setTitle("Return", for: UIControlState.normal)
+            let date = self.dateFormatterCheckOut()
+            self.checkedOutLabel.text = "Checked out, return on \(date)"
+            self.reserveButton.isHidden = true
+            root!.present(alertController, animated: true, completion: nil)
+        }) { (error) in
+            print(error.localizedDescription)
+        }
+        
     }
     
     @IBAction func bookDetailsClicked(_ sender: Any) {

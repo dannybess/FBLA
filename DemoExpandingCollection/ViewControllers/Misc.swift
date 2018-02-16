@@ -28,7 +28,11 @@ class Book {
     var reserved: Int = 0
     var bookID: String = ""
     var count: Int = 0
+    var isReserved : Bool = false
+    var date : String = ""
+    var isCheckedOut : Bool = false
     
+    // normal init
     init(name: String, author: String, checkedout: Int, reserved: Int, bookID: String, count: Int){
         self.name = name
         self.author = author
@@ -38,14 +42,17 @@ class Book {
         self.count = count
     }
     
-    // second init for storing only bookid
-    init(bookID: String) {
+    // init for storing books for user inventory
+    init(bookID: String, isReserved : Bool, isCheckedOut : Bool, date : String) {
         self.bookID = bookID
         self.name = ""
         self.author = ""
         self.checkedout = 0
         self.reserved = 0
         self.count = 0
+        self.isReserved = isReserved
+        self.date = date
+        self.isCheckedOut = isCheckedOut
     }
 }
 
