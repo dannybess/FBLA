@@ -5,7 +5,7 @@
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13174"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -31,12 +31,43 @@
                                 <color key="textColor" red="0.85882352941176465" green="0.8666666666666667" blue="0.87058823529411766" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RFu-46-CJk">
+                                <rect key="frame" x="37" y="132" width="300" height="350"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="libmap" translatesAutoresizingMaskIntoConstraints="NO" id="Iee-dz-EVG">
+                                        <rect key="frame" x="0.0" y="0.0" width="300" height="300"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="300" id="Eex-0J-FzI"/>
+                                            <constraint firstAttribute="height" constant="300" id="UMK-FK-f2v"/>
+                                        </constraints>
+                                    </imageView>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pJB-Ss-a84">
+                                        <rect key="frame" x="67" y="298" width="165" height="52"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="21"/>
+                                        <state key="normal" title="Exit"/>
+                                        <connections>
+                                            <action selector="extiClicked:" destination="owA-8G-88G" eventType="touchUpInside" id="y86-Ij-eD6"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" red="1" green="0.35294117650000001" blue="0.37254901959999998" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="pJB-Ss-a84" secondAttribute="bottom" id="CfR-HN-dTw"/>
+                                    <constraint firstItem="pJB-Ss-a84" firstAttribute="leading" secondItem="RFu-46-CJk" secondAttribute="leading" constant="67" id="L4m-Ne-OCt"/>
+                                    <constraint firstAttribute="width" constant="300" id="Pnl-Jq-FVn"/>
+                                    <constraint firstAttribute="height" constant="350" id="aCr-08-1wz"/>
+                                    <constraint firstItem="Iee-dz-EVG" firstAttribute="leading" secondItem="RFu-46-CJk" secondAttribute="leading" id="sKo-qi-XBn"/>
+                                    <constraint firstAttribute="bottom" secondItem="Iee-dz-EVG" secondAttribute="bottom" constant="50" id="ymr-dg-R6C"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="mRg-Mx-OVI" firstAttribute="top" secondItem="Irl-Rb-fcB" secondAttribute="bottom" constant="20" id="2LM-iO-324"/>
                             <constraint firstItem="o88-Ae-QCA" firstAttribute="top" secondItem="CO1-du-RsN" secondAttribute="top" id="MHx-PV-wBs"/>
+                            <constraint firstItem="o88-Ae-QCA" firstAttribute="top" secondItem="RFu-46-CJk" secondAttribute="bottom" constant="-482" id="Qgi-y3-l1V"/>
                             <constraint firstAttribute="trailing" secondItem="o88-Ae-QCA" secondAttribute="trailing" id="Xcv-FC-DFw"/>
+                            <constraint firstItem="RFu-46-CJk" firstAttribute="centerX" secondItem="o88-Ae-QCA" secondAttribute="centerX" id="ZoP-Bc-PMN"/>
                             <constraint firstAttribute="bottom" secondItem="o88-Ae-QCA" secondAttribute="bottom" id="aWe-c0-hwO"/>
                             <constraint firstItem="o88-Ae-QCA" firstAttribute="leading" secondItem="CO1-du-RsN" secondAttribute="leading" id="sd9-mZ-FXM"/>
                             <constraint firstItem="Irl-Rb-fcB" firstAttribute="centerX" secondItem="CO1-du-RsN" secondAttribute="centerX" id="yzg-tR-vdV"/>
@@ -67,7 +98,7 @@
                                 <constraint firstItem="92b-RV-q6w" firstAttribute="centerY" secondItem="U0J-H7-fvX" secondAttribute="centerY" id="qaL-Bm-FyO"/>
                             </constraints>
                         </view>
-                        <barButtonItem key="rightBarButtonItem" title="Item" image="locationButton" id="mbm-hT-lYD" customClass="AnimatingBarButton" customModule="DemoExpandingCollection" customModuleProvider="target">
+                        <barButtonItem key="rightBarButtonItem" title="Item" image="pinIcon" id="mbm-hT-lYD">
                             <userDefinedRuntimeAttributes>
                                 <userDefinedRuntimeAttribute type="string" keyPath="normalImageName" value="locationButton"/>
                                 <userDefinedRuntimeAttribute type="string" keyPath="selectedImageName" value="CloseButton"/>
@@ -75,9 +106,14 @@
                                     <real key="value" value="0.29999999999999999"/>
                                 </userDefinedRuntimeAttribute>
                             </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="mapClicked:" destination="owA-8G-88G" id="ZDF-v1-V37"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="mapButton" destination="mbm-hT-lYD" id="mT8-K1-HgA"/>
+                        <outlet property="mapView" destination="RFu-46-CJk" id="Vwj-xn-BTP"/>
                         <outlet property="pageLabel" destination="Irl-Rb-fcB" id="oUZ-x9-PkD"/>
                         <outlet property="searchButton" destination="xuF-jX-6LN" id="t2F-HF-wXR"/>
                         <segue destination="7RW-i0-HfN" kind="show" identifier="NoName" id="enc-PY-spo"/>
@@ -85,7 +121,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cU0-3v-d17" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1258" y="428"/>
+            <point key="canvasLocation" x="1256.8" y="427.73613193403304"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="ECt-UZ-ruI">
@@ -576,8 +612,9 @@
         <image name="face1" width="40" height="39"/>
         <image name="face2" width="40" height="39"/>
         <image name="heand" width="14" height="13"/>
-        <image name="locationButton" width="20" height="20"/>
+        <image name="libmap" width="548" height="572"/>
         <image name="map" width="375" height="124"/>
+        <image name="pinIcon" width="26" height="32"/>
         <image name="searchIcon" width="20" height="20"/>
         <image name="stars" width="77" height="11"/>
     </resources>

@@ -32,11 +32,25 @@ class DemoViewController: ExpandingViewController {
     fileprivate var items : [Book] = []
     
     @IBOutlet weak var searchButton: UIBarButtonItem!
+    @IBOutlet weak var mapButton: AnimatingBarButton!
+
     @IBOutlet var pageLabel: UILabel!
     
+    @IBOutlet weak var mapView: UIView!
+
     // search button clicked; handle events
     @IBAction func searchClicked(_ sender: Any) {
+        print("here")
         
+    }
+    @IBAction func mapClicked(_ sender: Any) {
+        //show map
+        self.mapView.bringSubview(toFront: self.view)
+        self.mapView.isHidden = false
+
+    }
+    @IBAction func extiClicked(_ sender: Any) {
+        self.mapView.isHidden = true
     }
 }
 
@@ -46,6 +60,9 @@ extension DemoViewController {
     override func viewDidLoad() {
         itemSize = CGSize(width: 256, height: 460)
         super.viewDidLoad()
+
+        self.mapView.isHidden = true
+
 
         registerCell()
         addGesture(to: collectionView!)
@@ -92,9 +109,10 @@ extension DemoViewController {
                 let checkedout = dict["checkedout"] as! Int
                 let count = dict["count"] as! Int
                 let reserved = dict["reserved"] as! Int
+                let imageURL = dict["imageURL"] as! String
             
                 
-                var book = Book(name: name, author: author, checkedout: Int(checkedout), reserved: Int(reserved), bookID: key as! String, count: Int(count))
+                var book = Book(name: name, author: author, checkedout: Int(checkedout), reserved: Int(reserved), bookID: key as! String, count: Int(count), imageURL: imageURL)
                 // add book
                 self.items.append(book)
                 // handle UI
@@ -102,9 +120,25 @@ extension DemoViewController {
                 // reload collection view
                 self.collectionView?.reloadData()
             }
+            self.loadImages()
+
             
         }) { (error) in
             print(error.localizedDescription)
+        }
+    }
+
+    func loadImages(){
+        print("here")
+        for book in self.items{
+            LoadImage.downloadImage(imageurl: book.imageURL, completion: { data, url  in
+                for index in 0..<self.items.count{
+                    if (self.items[index].imageURL == url){
+                        self.items[index].image = data
+                        self.collectionView?.reloadData()
+                    }
+                }
+            })
         }
     }
     
@@ -112,6 +146,7 @@ extension DemoViewController {
     fileprivate func loadUserInventory() {
         let ref = Database.database().reference()
         ref.child("users").child(user.schoolID).child("books").observeSingleEvent(of: .value, with: { (snapshot) in
+
             // check if user even exists
             if let values = snapshot.value as? NSDictionary {
                 for (key, val) in values {
@@ -121,11 +156,14 @@ extension DemoViewController {
                     let isReserved = dict["reserved"] as! Bool
                     let date = dict["date"] as! String
                     let isCheckedOut = dict["checkedout"] as! Bool
+                    let imageURL = dict["imageURL"] as! String
                     
                     // add book to User object
-                    user.books.append(Book(bookID: bookid, isReserved: isReserved, isCheckedOut: isCheckedOut, date: date))
+                    user.books.append(Book(bookID: bookid, isReserved: isReserved, isCheckedOut: isCheckedOut, date: date, imageURL: imageURL))
                     self.collectionView?.reloadData()
+
                 }
+
             }
             
         }) { (error) in
@@ -193,7 +231,7 @@ extension DemoViewController {
         let info = items[index]
         cell.bookInfo = info
         // set book image, name, and author
-        cell.backgroundImageView?.image = UIImage(named: "gatsby")
+        cell.backgroundImageView?.image = info.image
         cell.customTitle.text = info.name
         cell.authorLabel.text = "by " + info.author
         // configure visible buttons

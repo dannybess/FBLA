@@ -21,7 +21,7 @@ class DemoCollectionViewCell: BasePageCollectionCell {
     @IBOutlet weak var reserveButton: UIButton!
     @IBOutlet weak var authorLabel: UILabel!
     // create book object that can be passed through VC
-    var bookInfo : Book = Book(name: "", author: "", checkedout: 0, reserved: 0, bookID: "", count: 0)
+    var bookInfo : Book = Book(name: "", author: "", checkedout: 0, reserved: 0, bookID: "", count: 0, imageURL: "")
     
     override func awakeFromNib() {
         super.awakeFromNib()

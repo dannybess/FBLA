@@ -8,6 +8,8 @@ pod 'AABlurAlertController'
 pod 'Firebase/Core'
 pod 'Firebase/Database'
 pod 'DatePickerDialog'
+pod 'Firebase/Storage'
+
   # Pods for DemoExpandingCollection
 
 end

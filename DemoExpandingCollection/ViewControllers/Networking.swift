@@ -23,8 +23,9 @@ class Networking {
                 let checkedout = dict["checkedout"] as! Int
                 let count = dict["count"] as! Int
                 let reserved = dict["reserved"] as! Int
+                let imageURL = dict["imageURL"] as! String
                 
-                var book = Book(name: name, author: author, checkedout: checkedout, reserved: reserved, bookID: key as! String, count: count)
+                var book = Book(name: name, author: author, checkedout: checkedout, reserved: reserved, bookID: key as! String, count: count, imageURL: imageURL)
                 loadedBooks.append(book)
             }
             
