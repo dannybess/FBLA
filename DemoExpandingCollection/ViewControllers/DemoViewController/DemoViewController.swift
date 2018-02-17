@@ -156,10 +156,10 @@ extension DemoViewController {
                     let isReserved = dict["reserved"] as! Bool
                     let date = dict["date"] as! String
                     let isCheckedOut = dict["checkedout"] as! Bool
-                    let imageURL = dict["imageURL"] as! String
+                    //let imageURL = dict["imageURL"] as! String
                     
                     // add book to User object
-                    user.books.append(Book(bookID: bookid, isReserved: isReserved, isCheckedOut: isCheckedOut, date: date, imageURL: imageURL))
+                    user.books.append(Book(bookID: bookid, isReserved: isReserved, isCheckedOut: isCheckedOut, date: date, imageURL: ""))
                     self.collectionView?.reloadData()
 
                 }

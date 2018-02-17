@@ -16,12 +16,10 @@ let storageRef = storage.reference(forURL: "gs://flba2018-8b768.appspot.com/")
 
 class LoadImage {
 
+    // generate random string with length
     class func randomStringWithLength (len : Int) -> NSString {
-
         let letters : NSString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
         let randomString : NSMutableString = NSMutableString(capacity: len)
-
         for i in 0..<len {
             let length = UInt32 (letters.length)
             let rand = arc4random_uniform(length)
@@ -31,6 +29,7 @@ class LoadImage {
         return randomString
     }
 
+    // upload image
     class func uploadImage(image : UIImage, completion : @escaping (_ downloadURL : NSURL) -> Void) {
         let imageData : NSData = UIImagePNGRepresentation(image)! as NSData
         let testRef = storageRef.child("bookCover/\(randomStringWithLength(len: 10)).png")
@@ -45,6 +44,7 @@ class LoadImage {
         }
     }
 
+    // download image
     class func downloadImage(imageurl: String, completion: @escaping (_ image: UIImage, _ imageURL: String) -> Void) {
         let ref = storageRef.child(imageurl)
         // Download in memory with a maximum allowed size of 1MB (1 * 1024 * 1024 bytes)

@@ -8,19 +8,47 @@
 
 import UIKit
 import Firebase
+import UserNotifications
 
 //user for session
 let user = User(schoolID: "123456", name: "Daniel", books: [])
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         configureNavigationTabBar()
         FirebaseApp.configure()
+        // set notif delegate
+        UNUserNotificationCenter.current().delegate = self
+        // get user defaults
+        let defaults = UserDefaults.standard
+        // not first launch
+        if let permission = defaults.object(forKey: "permGranted") as? Bool {
+            // perm exists and not granted
+            if(permission == false) {
+                Reminder.getUserPermission() {
+                    result in
+                    defaults.set(result, forKey: "permGranted")
+                }
+            }
+        }
+        // is first launch
+        else {
+            Reminder.getUserPermission() {
+                result in
+                defaults.set(result, forKey: "permGranted")
+            }
+        }
+        print(UIApplication.shared.scheduledLocalNotifications)
+        print("ASFASFYUHHHH")
         return true
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.alert])
     }
 }
 

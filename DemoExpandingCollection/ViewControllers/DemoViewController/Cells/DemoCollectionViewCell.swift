@@ -56,6 +56,23 @@ class DemoCollectionViewCell: BasePageCollectionCell {
         return formatter.string(from: newDate!)
     }
     
+    // return date for when book is overdue
+    func dateFormatterOverdue() -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = DateFormatter.Style.short
+        let currDate = Date()
+        let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currDate)
+        let addedDate = Calendar.current.date(byAdding: .day, value: 1, to: newDate!)
+        return formatter.string(from: addedDate!)
+    }
+    
+    // return date from string
+    func stringToDate(date : String) -> Date {
+        let formatter = DateFormatter()
+        formatter.dateStyle = DateFormatter.Style.short
+        return formatter.date(from: date)!
+    }
+    
     // left button clicked
     // take according action (check out, return, reserve, pickup)
     @IBAction func checkOut(_ sender: Any) {
@@ -89,7 +106,6 @@ class DemoCollectionViewCell: BasePageCollectionCell {
         // get access to root VC
         let root = UIApplication.shared.keyWindow?.rootViewController
         user.books.append(bookInfo)
-        self.checkedOutLabel.text = "Checked Out"
         var ref = Database.database().reference()
         let schoolID = user.schoolID
         
@@ -128,8 +144,17 @@ class DemoCollectionViewCell: BasePageCollectionCell {
                 "You have now checked out this book!", preferredStyle: UIAlertControllerStyle.alert)
             alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
             self.checkOutButton.setTitle("Return", for: UIControlState.normal)
+            let date = self.dateFormatterCheckOut()
+            self.checkedOutLabel.text = "Checked out, return on \(date)"
             self.reserveButton.isHidden = true
             root!.present(alertController, animated: true, completion: nil)
+            
+            // set local notif
+            let convertedCheckOutDate = self.stringToDate(date: date)
+            let convertedOverdueDate = self.stringToDate(date: self.dateFormatterOverdue())
+            Reminder.setReminder(type: "today", date: convertedCheckOutDate, book: self.bookInfo)
+            Reminder.setReminder(type: "overdue", date: convertedOverdueDate, book: self.bookInfo)
+            
         }) { (error) in
             print(error.localizedDescription)
         }
@@ -179,8 +204,12 @@ class DemoCollectionViewCell: BasePageCollectionCell {
             let alertController = UIAlertController(title: "Success!", message:
                     "You have now returned this book!", preferredStyle: UIAlertControllerStyle.alert)
             alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
-                
             root!.present(alertController, animated: true, completion: nil)
+                
+            // remove local notifications
+            Reminder.removeReminder(type: "today", book: self.bookInfo)
+            Reminder.removeReminder(type: "overdue", book: self.bookInfo)
+                
         }) { (error) in
             print(error.localizedDescription)
         }
@@ -288,6 +317,13 @@ class DemoCollectionViewCell: BasePageCollectionCell {
             self.checkedOutLabel.text = "Checked out, return on \(date)"
             self.reserveButton.isHidden = true
             root!.present(alertController, animated: true, completion: nil)
+            
+            // set local notif
+            let convertedCheckOutDate = self.stringToDate(date: date)
+            let convertedOverdueDate = self.stringToDate(date: self.dateFormatterOverdue())
+            Reminder.setReminder(type: "today", date: convertedCheckOutDate, book: self.bookInfo)
+            Reminder.setReminder(type: "overdue", date: convertedOverdueDate, book: self.bookInfo)
+            
         }) { (error) in
             print(error.localizedDescription)
         }
