@@ -26,7 +26,28 @@ extension String {
 }
 
 // define class specific variables
-class DemoViewController: ExpandingViewController {
+class DemoViewController: ExpandingViewController, AlertOnboardingDelegate{
+
+    func alertOnboardingSkipped(_ currentStep: Int, maxStep: Int) {
+        print("Onboarding skipped the \(currentStep) step and the max step he saw was the number \(maxStep)")
+    }
+
+    func alertOnboardingCompleted() {
+        print("Onboarding completed!")
+    }
+
+    func alertOnboardingNext(_ nextStep: Int) {
+        print("Next step triggered! \(nextStep)")
+    }
+
+    var alertView: AlertOnboarding!
+
+    var arrayOfImage = ["face1", "face2", "icons"]
+    var arrayOfTitle = ["CREATE ACCOUNT", "CHOOSE THE PLANET", "DEPARTURE"]
+    var arrayOfDescription = ["In your profile, you can view the statistics of its operations and the recommandations of friends",
+                              "Purchase tickets on hot tours to your favorite planet and fly to the most comfortable intergalactic spaceships of best companies",
+                              "In the process of flight you will be in cryogenic sleep and supply the body with all the necessary things for life"]
+
     
     fileprivate var cellsIsOpen = [Bool]()
     fileprivate var items : [Book] = []
@@ -63,6 +84,11 @@ extension DemoViewController {
 
         self.mapView.isHidden = true
 
+        alertView = AlertOnboarding(arrayOfImage: arrayOfImage, arrayOfTitle: arrayOfTitle, arrayOfDescription: arrayOfDescription)
+        alertView.delegate = self
+
+        //if first time open application
+        self.alertView.show()
 
         registerCell()
         addGesture(to: collectionView!)
@@ -79,6 +105,7 @@ extension DemoViewController {
     fileprivate func registerCell() {
         let nib = UINib(nibName: String(describing: DemoCollectionViewCell.self), bundle: nil)
         collectionView?.register(nib, forCellWithReuseIdentifier: String(describing: DemoCollectionViewCell.self))
+        collectionView?.addSubview(mapView)
     }
 
     // fill array with empty values
