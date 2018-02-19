@@ -88,7 +88,14 @@ extension DemoViewController {
         alertView.delegate = self
 
         //if first time open application
-        self.alertView.show()
+        let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
+        if launchedBefore  {
+            print("Not first launch.")
+        } else {
+            print("First launch, setting UserDefault.")
+            self.alertView.show()
+            UserDefaults.standard.set(true, forKey: "launchedBefore")
+        }
 
         registerCell()
         addGesture(to: collectionView!)
