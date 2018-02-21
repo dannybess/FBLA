@@ -43,16 +43,16 @@ class DemoViewController: ExpandingViewController, AlertOnboardingDelegate{
     var alertView: AlertOnboarding!
 
     var arrayOfImage = ["face1", "face2", "icons"]
-    var arrayOfTitle = ["CREATE ACCOUNT", "CHOOSE THE PLANET", "DEPARTURE"]
-    var arrayOfDescription = ["In your profile, you can view the statistics of its operations and the recommandations of friends",
-                              "Purchase tickets on hot tours to your favorite planet and fly to the most comfortable intergalactic spaceships of best companies",
-                              "In the process of flight you will be in cryogenic sleep and supply the body with all the necessary things for life"]
+    var arrayOfTitle = ["Browse Books", "Check out and Reserve", "Reminders"]
+    var arrayOfDescription = ["Swipe left or right to browse the library's books",
+                              "Swipe up at a book to checkout or reserve it",
+                              "Get reminders on the day your book is due"]
 
     
     fileprivate var cellsIsOpen = [Bool]()
     fileprivate var items : [Book] = []
     
-    @IBOutlet weak var searchButton: UIBarButtonItem!
+    //@IBOutlet weak var searchButton: UIBarButtonItem!
     @IBOutlet weak var mapButton: AnimatingBarButton!
 
     @IBOutlet var pageLabel: UILabel!
@@ -60,10 +60,10 @@ class DemoViewController: ExpandingViewController, AlertOnboardingDelegate{
     @IBOutlet weak var mapView: UIView!
 
     // search button clicked; handle events
-    @IBAction func searchClicked(_ sender: Any) {
+    /*@IBAction func searchClicked(_ sender: Any) {
         print("here")
         
-    }
+    }*/
     @IBAction func mapClicked(_ sender: Any) {
         //show map
         self.mapView.bringSubview(toFront: self.view)
@@ -103,6 +103,10 @@ extension DemoViewController {
         loadBooks()
         loadUserInventory()
         fillCellIsOpenArray()
+    }
+
+    func setUpLibrary(){
+
     }
 }
 
@@ -163,7 +167,6 @@ extension DemoViewController {
     }
 
     func loadImages(){
-        print("here")
         for book in self.items{
             LoadImage.downloadImage(imageurl: book.imageURL, completion: { data, url  in
                 for index in 0..<self.items.count{
@@ -263,11 +266,14 @@ extension DemoViewController {
         // get book at index
         let index = indexPath.row % items.count
         let info = items[index]
+
         cell.bookInfo = info
         // set book image, name, and author
         cell.backgroundImageView?.image = info.image
         cell.customTitle.text = info.name
         cell.authorLabel.text = "by " + info.author
+
+        print(user.books)
         // configure visible buttons
         // if checked-out, only show return
         // if reserved, only show pick-up (if date is before reserved date)
@@ -275,6 +281,8 @@ extension DemoViewController {
         if let book = checkIfInInventory(bookId: info.bookID) {
             // checked out
             if(book.isCheckedOut) {
+                print("checkedout")
+                print(book.checkedout)
                 cell.checkedOutLabel.text = "Checked out, return on \(book.date)"
                 cell.checkOutButton.setTitle("Return", for: UIControlState.normal)
                 // should be hidden
@@ -293,6 +301,11 @@ extension DemoViewController {
         else {
             // not checked out and both buttons should be visible
             cell.checkedOutLabel.text = "Not Checked Out"
+            /*cell.reserveButton.isHidden = false
+            cell.checkOutButton.isHidden = false
+            cell.reserveButton.setTitle("Reserve", for: UIControlState.normal)
+            cell.checkOutButton.setTitle("Check out", for: UIControlState.normal)*/
+
         }
 
         cell.cellIsOpen(cellsIsOpen[index], animated: false)

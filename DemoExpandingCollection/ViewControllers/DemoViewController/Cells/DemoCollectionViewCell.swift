@@ -52,7 +52,7 @@ class DemoCollectionViewCell: BasePageCollectionCell {
         let formatter = DateFormatter()
         formatter.dateStyle = DateFormatter.Style.short
         let currDate = Date()
-        let newDate = Calendar.current.date(byAdding: .month, value: 1, to: currDate)
+        let newDate = Calendar.current.date(byAdding: .month, value:  1, to: currDate)
         return formatter.string(from: newDate!)
     }
     
@@ -150,7 +150,9 @@ class DemoCollectionViewCell: BasePageCollectionCell {
             root!.present(alertController, animated: true, completion: nil)
             
             // set local notif
+
             let convertedCheckOutDate = self.stringToDate(date: date)
+            print(self.dateFormatterOverdue())
             let convertedOverdueDate = self.stringToDate(date: self.dateFormatterOverdue())
             Reminder.setReminder(type: "today", date: convertedCheckOutDate, book: self.bookInfo)
             Reminder.setReminder(type: "overdue", date: convertedOverdueDate, book: self.bookInfo)
@@ -165,13 +167,18 @@ class DemoCollectionViewCell: BasePageCollectionCell {
     func returnCheckedout(user: User, returnBookID: String){
         var ref = Database.database().reference()
         let root = UIApplication.shared.keyWindow?.rootViewController
+
         //remove book locally
-        
-        for index in 0..<user.books.count-1{
+
+        for index in 0...user.books.count-1{
             if user.books[index].bookID == returnBookID {
                 user.books.remove(at: index)
-                }
+
             }
+        }
+        print("userbooks")
+        print(user.books)
+
             ref.child("users").child(user.schoolID).child("books").child(returnBookID).removeValue()
             ref.child("library").child(returnBookID).observeSingleEvent(of: .value, with: { (snapshot) in
             // Get user value

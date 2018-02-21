@@ -75,11 +75,6 @@
                     </view>
                     <navigationItem key="navigationItem" id="Mck-gv-XOR">
                         <nil key="title"/>
-                        <barButtonItem key="leftBarButtonItem" image="searchIcon" id="xuF-jX-6LN">
-                            <connections>
-                                <action selector="searchClicked:" destination="owA-8G-88G" id="uWL-5N-x1a"/>
-                            </connections>
-                        </barButtonItem>
                         <view key="titleView" contentMode="scaleToFill" id="U0J-H7-fvX">
                             <rect key="frame" x="67.5" y="5.5" width="240" height="33"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -115,7 +110,6 @@
                         <outlet property="mapButton" destination="mbm-hT-lYD" id="mT8-K1-HgA"/>
                         <outlet property="mapView" destination="RFu-46-CJk" id="Vwj-xn-BTP"/>
                         <outlet property="pageLabel" destination="Irl-Rb-fcB" id="oUZ-x9-PkD"/>
-                        <outlet property="searchButton" destination="xuF-jX-6LN" id="t2F-HF-wXR"/>
                         <segue destination="7RW-i0-HfN" kind="show" identifier="NoName" id="enc-PY-spo"/>
                     </connections>
                 </viewController>
