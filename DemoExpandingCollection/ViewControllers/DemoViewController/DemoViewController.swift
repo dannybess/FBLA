@@ -42,13 +42,27 @@ class DemoViewController: ExpandingViewController, AlertOnboardingDelegate{
 
     var alertView: AlertOnboarding!
 
-    var arrayOfImage = ["face1", "face2", "icons"]
+    var arrayOfImage = ["tutorial1", "tutorial2", "tutorial3"]
     var arrayOfTitle = ["Browse Books", "Check out and Reserve", "Reminders"]
     var arrayOfDescription = ["Swipe left or right to browse the library's books",
                               "Swipe up at a book to checkout or reserve it",
                               "Get reminders on the day your book is due"]
+    //sample library
+    var library: [Book] = [Book(name: "The Great Gatsby", author: "Fitzgerald", checkedout: 0, reserved: 0, bookID: "240082", count: 10, imageURL: "bookCover/FhVmetipjl.png"),
+                           Book(name: "Beloved", author: "Toni Morrison", checkedout: 0, reserved: 0, bookID: "123423", count: 10, imageURL: "bookCover/5hQ5vfHYli.png"),
+                           Book(name: "Grapes of Wrath", author: "John steinbeck", checkedout: 0, reserved: 0, bookID: "145345", count: 10, imageURL: "bookCover/30GGO4fsWK.png"),
+                           Book(name: "Hamlet", author: "William Shakespeare", checkedout: 0, reserved: 0, bookID: "204958", count: 10, imageURL: "bookCover/1x4VogV8X3.png"),
+                           Book(name: "Harry Potter", author: "J. K. Rowling", checkedout: 0, reserved: 0, bookID: "580942", count: 10, imageURL: "bookCover/xLBEK6dHhx.png"),
+                           Book(name: "Stargirl", author: "Jerry Spinelli", checkedout: 0, reserved: 0, bookID: "459283", count: 10, imageURL: "bookCover/tIVilwXj7j.png"),
+                           Book(name: "The Hunger Games", author: "Suzanne Collins", checkedout: 0, reserved: 0, bookID: "598023", count: 10, imageURL: "bookCover/qjufd2RqyJ.png"),
+                           Book(name: "The Kite Runner", author: "Khaled Hosseini", checkedout: 0, reserved: 0, bookID: "589432", count: 10, imageURL: "bookCover/90HlLz9UGr.png"),
 
-    
+                           ]
+    //sample book covers
+    var coverImages: [UIImage] = [UIImage(named:"Gatsby")!, UIImage(named:"Beloved")!,UIImage(named:"grapesofwrath")!,UIImage(named:"Hamlet")!,
+                                  UIImage(named:"HarryPotter")!,UIImage(named:"stargirl")!,UIImage(named:"Thehungergames")!,UIImage(named:"TheKiteRunner")!]
+    var ref: DatabaseReference!
+
     fileprivate var cellsIsOpen = [Bool]()
     fileprivate var items : [Book] = []
     
@@ -78,9 +92,12 @@ class DemoViewController: ExpandingViewController, AlertOnboardingDelegate{
 // lifecycle functinos; call networking functions and setup view
 extension DemoViewController {
 
+
     override func viewDidLoad() {
         itemSize = CGSize(width: 256, height: 460)
         super.viewDidLoad()
+
+        ref = Database.database().reference()
 
         self.mapView.isHidden = true
 
@@ -103,10 +120,73 @@ extension DemoViewController {
         loadBooks()
         loadUserInventory()
         fillCellIsOpenArray()
+
+        //setup library
+        //uploadImages()
+        //setUpLibrary()
+    }
+
+    func scaleDownImage(image: UIImage) -> UIImage{
+        var actualHeight: CGFloat = image.size.height
+        var actualWidth: CGFloat = image.size.width
+        let maxHeight: CGFloat = 700
+        let maxWidth: CGFloat = 700
+        var imgRatio: CGFloat = actualWidth/actualHeight
+        let maxRatio: CGFloat = maxWidth/maxHeight
+        let compressionQuality: CGFloat = 0.5
+
+        if (actualHeight > maxHeight || actualWidth > maxWidth)
+        {
+            if(imgRatio < maxRatio)
+            {
+                //adjust width according to maxHeight
+                imgRatio = maxHeight / actualHeight
+                actualWidth = imgRatio * actualWidth
+                actualHeight = maxHeight;
+            }
+            else if(imgRatio > maxRatio)
+            {
+                //adjust height according to maxWidth
+                imgRatio = maxWidth / actualWidth
+                actualHeight = imgRatio * actualHeight
+                actualWidth = maxWidth;
+            }
+            else
+            {
+                actualHeight = maxHeight
+                actualWidth = maxWidth
+            }
+        }
+
+
+        let rect = CGRect(x: 0.0, y: 0.0, width: actualWidth, height: actualHeight)
+        UIGraphicsBeginImageContext(rect.size)
+        image.draw(in: rect)
+        let img = UIGraphicsGetImageFromCurrentImageContext()
+        let imageData = UIImageJPEGRepresentation(img!, compressionQuality)
+        UIGraphicsEndImageContext()
+
+        //return [UIImage imageWithData:imageData]
+        return UIImage(data: imageData!)!
+    }
+
+    func uploadImages(){
+        for i in 0...self.coverImages.count-1 {
+            LoadImage.uploadImage(name: library[i].name, image: self.scaleDownImage(image: self.coverImages[i]), completion: {downloadURL in
+                
+            })
+        }
     }
 
     func setUpLibrary(){
-
+        for book in self.library {
+            self.ref.child("library").child(book.bookID).child("name").setValue(book.name) //setValue(["name": books[1].name])
+            self.ref.child("library").child(book.bookID).child("author").setValue(book.author)//setValue(["author": books[1].author])
+            self.ref.child("library").child(book.bookID).child("checkedout").setValue(book.checkedout)//setValue(["checkedout": String(books[1].checkedout)])
+            self.ref.child("library").child(book.bookID).child("reserved").setValue(book.reserved)//setValue(["reserved": String(books[1].reserved)])
+            self.ref.child("library").child(book.bookID).child("count").setValue(book.count)//setValue(["count": String(books[1].count)])
+            self.ref.child("library").child(book.bookID).child("imageURL").setValue(book.imageURL)
+        }
     }
 }
 

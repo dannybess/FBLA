@@ -30,7 +30,7 @@ class LoadImage {
     }
 
     // upload image
-    class func uploadImage(image : UIImage, completion : @escaping (_ downloadURL : NSURL) -> Void) {
+    class func uploadImage(name: String, image : UIImage, completion : @escaping (_ downloadURL : NSURL) -> Void) {
         let imageData : NSData = UIImagePNGRepresentation(image)! as NSData
         let testRef = storageRef.child("bookCover/\(randomStringWithLength(len: 10)).png")
 
@@ -38,7 +38,10 @@ class LoadImage {
             if (error != nil) {
                 print(error.debugDescription)
             } else {
+
                 let downloadURL = metadata!.downloadURL()
+                print(name)
+                print(testRef)
                 completion(downloadURL! as NSURL)
             }
         }
